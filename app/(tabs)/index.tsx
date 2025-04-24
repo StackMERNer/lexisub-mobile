@@ -4,8 +4,19 @@ import { loadStopwords } from "@/utils/loadStopwords";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { useState } from "react";
+import WordBatch from "@/components/WordBatch";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+export interface WordWithSentence {
+  word: string;
+  sentence: string;
+}
 export default function HomeScreen() {
+  // Create a new query client
+  const queryClient = new QueryClient();
+  const [wordsWithSentence, setWordsWithSentence] = useState<
+    WordWithSentence[]
+  >([]);
   const pickSRTFile = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: "*/*",
@@ -19,7 +30,8 @@ export default function HomeScreen() {
       const dialogues = parseSRT(content);
 
       const wordsWithContext = await extractWordsWithContext(dialogues);
-      // console.log("wordsWithContext", wordsWithContext); // Array of objects with word and context
+      setWordsWithSentence(wordsWithContext);
+      console.log("wordsWithContext", wordsWithContext.length);
     }
   };
   const parseSRT = (srtContent: string) => {
@@ -71,11 +83,14 @@ export default function HomeScreen() {
     return Array.from(wordMap, ([word, sentence]) => ({ word, sentence }));
   };
   return (
-    <SafeAreaView>
-      <View>
-        <Text>hello</Text>
-        <Button title="Pick SRT File" onPress={pickSRTFile} />
-      </View>
-    </SafeAreaView>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaView>
+        <View>
+          <Text>hello</Text>
+          <Button title="Pick SRT File" onPress={pickSRTFile} />
+          <WordBatch batch={wordsWithSentence.slice(0, 10)} />
+        </View>
+      </SafeAreaView>
+    </QueryClientProvider>
   );
 }
