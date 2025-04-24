@@ -1,74 +1,81 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Button, Text, View } from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { loadStopwords } from "@/utils/loadStopwords";
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const pickSRTFile = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: "*/*",
+      copyToCacheDirectory: true,
+    });
+
+    if (!result.canceled) {
+      const fileUri = result.assets[0].uri;
+      const content = await FileSystem.readAsStringAsync(fileUri);
+      // console.log("content", content);
+      const dialogues = parseSRT(content);
+
+      const wordsWithContext = await extractWordsWithContext(dialogues);
+      // console.log("wordsWithContext", wordsWithContext); // Array of objects with word and context
+    }
+  };
+  const parseSRT = (srtContent: string) => {
+    const lines = srtContent.split("\n");
+    const dialogueLines = [];
+    let buffer = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      if (!line) {
+        if (buffer.length) {
+          dialogueLines.push(buffer.join(" "));
+          buffer = [];
+        }
+      } else if (!/^\d+$/.test(line) && !/-->/i.test(line)) {
+        buffer.push(line);
+      }
+    }
+
+    if (buffer.length) {
+      dialogueLines.push(buffer.join(" "));
+    }
+
+    return dialogueLines;
+  };
+
+  const extractWordsWithContext = async (dialogues: string[]) => {
+    const stopwords = await loadStopwords();
+    const wordMap = new Map<string, string>();
+
+    const isStopword = (word: string) => stopwords.includes(word);
+    console.log("stopwords", stopwords);
+    dialogues.forEach((sentence) => {
+      const words = sentence
+        .toLowerCase()
+        .replace(/[^a-z\s]/g, "")
+        .split(/\s+/)
+        .filter(Boolean)
+        .filter((word) => !isStopword(word));
+
+      words.forEach((word) => {
+        if (!wordMap.has(word)) {
+          wordMap.set(word, sentence);
+        }
+      });
+    });
+
+    return Array.from(wordMap, ([word, sentence]) => ({ word, sentence }));
+  };
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView>
+      <View>
+        <Text>hello</Text>
+        <Button title="Pick SRT File" onPress={pickSRTFile} />
+      </View>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
