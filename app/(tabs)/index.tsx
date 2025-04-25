@@ -8,6 +8,8 @@ import { useState } from "react";
 import WordBatch from "@/components/WordBatch";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Pagination from "@/components/Pagination";
+import { DatabaseProvider } from "@nozbe/watermelondb/DatabaseProvider";
+import { database } from "@/database";
 export interface WordWithSentence {
   word: string;
   sentence: string;
@@ -89,28 +91,32 @@ export default function HomeScreen() {
     return Array.from(wordMap, ([word, sentence]) => ({ word, sentence }));
   };
   return (
-    <QueryClientProvider client={queryClient}>
-      <SafeAreaView>
-        <View className="h-full border-2 border-red-200  justify-between p-1 bg-[#f8f2e2]">
-          <TouchableOpacity
-            onPress={pickSRTFile}
-            className="flex-1 bg-green-100 items-center justify-center border-dashed border-2 border-green-600 rounded-[50px] "
-          >
-            <Text className="text-center text-lg font-bold">Pick SRT File</Text>
-          </TouchableOpacity>
-          <WordBatch
-            batch={wordsWithSentence.slice(
-              (currentPage - 1) * wordsPerPage,
-              currentPage * wordsPerPage
-            )}
-          />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={Math.ceil(totalWords / wordsPerPage)}
-            onPageChange={(page) => setCurrentPage(page)}
-          />
-        </View>
-      </SafeAreaView>
-    </QueryClientProvider>
+    <DatabaseProvider database={database}>
+      <QueryClientProvider client={queryClient}>
+        <SafeAreaView>
+          <View className="h-full border-2 border-red-200  justify-between p-1 bg-[#f8f2e2]">
+            <TouchableOpacity
+              onPress={pickSRTFile}
+              className="flex-1 bg-green-100 items-center justify-center border-dashed border-2 border-green-600 rounded-[50px] "
+            >
+              <Text className="text-center text-lg font-bold">
+                Pick SRT File
+              </Text>
+            </TouchableOpacity>
+            <WordBatch
+              batch={wordsWithSentence.slice(
+                (currentPage - 1) * wordsPerPage,
+                currentPage * wordsPerPage
+              )}
+            />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(totalWords / wordsPerPage)}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
+          </View>
+        </SafeAreaView>
+      </QueryClientProvider>
+    </DatabaseProvider>
   );
 }
