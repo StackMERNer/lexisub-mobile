@@ -6,20 +6,10 @@ import WordWithInfo from "./WordWithInfo";
 
 const WordBatch = ({ batch }: { batch: WordWithSentence[] }) => {
   return (
-    <ScrollView>
-      <View
-        style={{
-          padding: 10,
-          borderBottomWidth: 1,
-          borderBottomColor: "#ccc",
-          backgroundColor: "#f9f9f9",
-          gap: 10,
-        }}
-      >
-        {batch.map((word, index) => (
-          <WordWithInfo key={index} word={word.word} sentence={word.sentence} />
-        ))}
-      </View>
+    <ScrollView className=" p-3 gap-2 pb-40 ">
+      {batch.map((word, index) => (
+        <WordWithInfo key={index} word={word.word} sentence={word.sentence} />
+      ))}
     </ScrollView>
   );
 };

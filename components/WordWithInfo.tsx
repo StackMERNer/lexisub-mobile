@@ -1,5 +1,5 @@
 // WordWithInfo.tsx
-import { View, Text } from "react-native";
+import { View, Text, Button, TouchableOpacity } from "react-native";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -33,7 +33,7 @@ const useLemmaAndMeaning = (word: string) => {
 
       return { lemma, meaning };
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 1000 * 60 * 60 * 24, // 1 day
   });
 };
 
@@ -41,21 +41,33 @@ const WordWithInfo = ({ word, sentence }: Props) => {
   const { data, isLoading, error } = useLemmaAndMeaning(word);
 
   return (
-    <View
-      style={{
-        padding: 10,
-        shadowColor: "#000",
-        elevation: 2,
-      }}
-    >
-      <Text>Word: {word}</Text>
+    <View className="p-4 border-b border-gray-300 bg-gray-50 gap-2 shadow rounded-[20px] mb-3">
       {isLoading && <Text>Loading...</Text>}
       {error && <Text>Error loading data</Text>}
       {data && (
         <>
-          <Text>Lemma: {data.lemma}</Text>
-          <Text>Meaning: {data.meaning}</Text>
-          <Text>Sentence: {sentence}</Text>
+          <Text className="text-xl font-bold">{data.lemma}</Text>
+          <Text>- {data.meaning}</Text>
+          <Text className="italic"> {sentence}</Text>
+          <View className="flex-row justify-between mt-2 gap-2">
+            <TouchableOpacity
+              onPress={() => {
+                // Handle the action here
+              }}
+              className="bg-red-400 rounded p-4 flex-1"
+            >
+              <Text className="font-bold text-center">Delete</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                // Handle the action here
+              }}
+              className="bg-green-500 rounded p-4 flex-1"
+            >
+              <Text className="text-white text-center">Add to Learning</Text>
+            </TouchableOpacity>
+          </View>
         </>
       )}
     </View>
