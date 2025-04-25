@@ -1,4 +1,4 @@
-import { Button, Text, View } from "react-native";
+import { Button, Text, TouchableOpacity, View } from "react-native";
 
 import { loadStopwords } from "@/utils/loadStopwords";
 import * as DocumentPicker from "expo-document-picker";
@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import WordBatch from "@/components/WordBatch";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Pagination from "@/components/Pagination";
 export interface WordWithSentence {
   word: string;
   sentence: string;
@@ -17,7 +18,11 @@ export default function HomeScreen() {
   const [wordsWithSentence, setWordsWithSentence] = useState<
     WordWithSentence[]
   >([]);
+  const [totalWords, setTotalWords] = useState(0);
+  const [wordsPerPage, setWordsPerPage] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
   const pickSRTFile = async () => {
+    setTotalWords(0);
     const result = await DocumentPicker.getDocumentAsync({
       type: "*/*",
       copyToCacheDirectory: true,
@@ -30,6 +35,7 @@ export default function HomeScreen() {
       const dialogues = parseSRT(content);
 
       const wordsWithContext = await extractWordsWithContext(dialogues);
+      setTotalWords(wordsWithContext.length);
       setWordsWithSentence(wordsWithContext);
       console.log("wordsWithContext", wordsWithContext.length);
     }
@@ -85,9 +91,24 @@ export default function HomeScreen() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaView>
-        <View>
-          <Button title="Pick SRT File" onPress={pickSRTFile} />
-          <WordBatch batch={wordsWithSentence.slice(0, 10)} />
+        <View className="h-full border-2 border-red-200  justify-between p-1 bg-[#f8f2e2]">
+          <TouchableOpacity
+            onPress={pickSRTFile}
+            className="flex-1 bg-green-100 items-center justify-center border-dashed border-2 border-green-600 rounded-[50px] "
+          >
+            <Text className="text-center text-lg font-bold">Pick SRT File</Text>
+          </TouchableOpacity>
+          <WordBatch
+            batch={wordsWithSentence.slice(
+              (currentPage - 1) * wordsPerPage,
+              currentPage * wordsPerPage
+            )}
+          />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={Math.ceil(totalWords / wordsPerPage)}
+            onPageChange={(page) => setCurrentPage(page)}
+          />
         </View>
       </SafeAreaView>
     </QueryClientProvider>

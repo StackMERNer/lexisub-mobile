@@ -2,7 +2,7 @@
 import { View, Text, Button, TouchableOpacity } from "react-native";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
-
+import { Ionicons } from "@expo/vector-icons";
 interface Props {
   word: string;
   sentence: string;
@@ -46,7 +46,17 @@ const WordWithInfo = ({ word, sentence }: Props) => {
       {error && <Text>Error loading data</Text>}
       {data && (
         <>
-          <Text className="text-xl font-bold">{data.lemma}</Text>
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-xl font-bold flex-1">{data.lemma}</Text>
+            <TouchableOpacity
+              onPress={() => {
+                // Handle the action here
+              }}
+              className="bg-red-400  p-2 flex-1 rounded-full max-w-[40px] items-center justify-center"
+            >
+              <Ionicons name="trash" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
           <Text>- {data.meaning}</Text>
           <Text className="italic"> {sentence}</Text>
           <View className="flex-row justify-between mt-2 gap-2">
@@ -54,18 +64,11 @@ const WordWithInfo = ({ word, sentence }: Props) => {
               onPress={() => {
                 // Handle the action here
               }}
-              className="bg-red-400 rounded p-4 flex-1"
+              className="bg-green-500 rounded-full p-4 flex-1"
             >
-              <Text className="font-bold text-center">Delete</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                // Handle the action here
-              }}
-              className="bg-green-500 rounded p-4 flex-1"
-            >
-              <Text className="text-white text-center">Add to Learning</Text>
+              <Text className="text-white text-center font-bold ">
+                Add to Learning
+              </Text>
             </TouchableOpacity>
           </View>
         </>
