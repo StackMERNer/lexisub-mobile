@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import WordBatch from "@/components/WordBatch";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 export interface WordWithSentence {
   word: string;
   sentence: string;
@@ -86,7 +87,9 @@ export default function HomeScreen() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaView>
         <View>
-          <Text>hello</Text>
+          <Text className="text-3xl text-center text-red-300 underline">
+            hello
+          </Text>
           <Button title="Pick SRT File" onPress={pickSRTFile} />
           <WordBatch batch={wordsWithSentence.slice(0, 10)} />
         </View>
