@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from "@nozbe/watermelondb";
 
 export const schema = appSchema({
-  version: 1,
+  version: 2,
   tables: [
     tableSchema({
       name: "word_cards",
@@ -16,6 +16,13 @@ export const schema = appSchema({
         { name: "efactor", type: "number" },
         { name: "next_review", type: "number" },
         { name: "created_at", type: "number" },
+      ],
+    }),
+    tableSchema({
+      name: "deleted_words",
+      columns: [
+        { name: "word", type: "string" },
+        { name: "deleted_at", type: "number" },
       ],
     }),
   ],

@@ -3,6 +3,8 @@ import { View, Text, Button, TouchableOpacity } from "react-native";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
+import { database } from "@/database";
+import WordCard from "@/database/model/WordCard";
 interface Props {
   word: string;
   sentence: string;
@@ -40,6 +42,29 @@ const useLemmaAndMeaning = (word: string) => {
 const WordWithInfo = ({ word, sentence }: Props) => {
   const { data, isLoading, error } = useLemmaAndMeaning(word);
 
+  async function addWordToLearning(
+    word: string,
+    sentence: string,
+    meaning: string
+  ) {
+    console.log(word, sentence, meaning); // Check if word is set correctly here
+    await database.write(async () => {
+      const wordCard = await database.collections
+        .get("word_cards")
+        .create((card) => {
+          card.word = word; // Should set the word correctly
+          card.sentence = sentence;
+          card.meaning = meaning;
+          card.status = "learning";
+          card.interval = 1;
+          card.repetition = 0;
+          card.efactor = 2.5;
+          card.nextReview = Date.now();
+        });
+      console.log("wordCard", wordCard); // Check if word is set correctly here
+    });
+  }
+
   return (
     <View className="p-4 border-b border-gray-300 bg-gray-50 gap-2 shadow rounded-[20px] mb-3">
       {isLoading && <Text>Loading...</Text>}
@@ -61,8 +86,8 @@ const WordWithInfo = ({ word, sentence }: Props) => {
           <Text className="italic"> {sentence}</Text>
           <View className="flex-row justify-between mt-2 gap-2">
             <TouchableOpacity
-              onPress={() => {
-                // Handle the action here
+              onPress={async () => {
+                await addWordToLearning(data.lemma, sentence, data.meaning);
               }}
               className="bg-green-500 rounded-full p-4 flex-1"
             >

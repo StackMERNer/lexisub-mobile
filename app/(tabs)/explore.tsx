@@ -6,8 +6,7 @@ export default function TabTwoScreen() {
   return (
     <SafeAreaView>
       <View>
-        hello
-        <Text />
+        <Text>Explore</Text>
       </View>
     </SafeAreaView>
   );
