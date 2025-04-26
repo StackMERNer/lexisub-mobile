@@ -94,7 +94,7 @@ export default function HomeScreen() {
     <DatabaseProvider database={database}>
       <QueryClientProvider client={queryClient}>
         <SafeAreaView>
-          <View className="h-full border-2 border-red-200  justify-between p-1 bg-[#f8f2e2]">
+          <View className="h-full  justify-between p-1 bg-[#f8f2e2]">
             <TouchableOpacity
               onPress={pickSRTFile}
               className="flex-1 bg-green-100 items-center justify-center border-dashed border-2 border-green-600 rounded-[50px] "
