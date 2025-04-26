@@ -1,4 +1,3 @@
-// database/index.ts
 import { Database } from "@nozbe/watermelondb";
 import SQLiteAdapter from "@nozbe/watermelondb/adapters/sqlite";
 import { schema } from "./schema";

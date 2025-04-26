@@ -1,10 +1,8 @@
-// WordWithInfo.tsx
-import { View, Text, Button, TouchableOpacity } from "react-native";
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Ionicons } from "@expo/vector-icons";
 import { database } from "@/database";
-import WordCard from "@/database/model/WordCard";
+import { Ionicons } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 interface Props {
   word: string;
   sentence: string;
@@ -14,26 +12,15 @@ const useLemmaAndMeaning = (word: string) => {
   return useQuery({
     queryKey: ["lemmaAndMeaning", word],
     queryFn: async () => {
-      const lemmaRes = await fetch(
-        "https://lexisub-api.onrender.com/lemmatize",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: word }),
-        }
-      );
-      const lemmaData = await lemmaRes.json();
-      const lemma = lemmaData.lemmas?.[0] || word;
-
       const meaningRes = await fetch(
-        `https://api.dictionaryapi.dev/api/v2/entries/en/${lemma}`
+        `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`
       );
       const meaningData = await meaningRes.json();
       const meaning =
         meaningData?.[0]?.meanings?.[0]?.definitions?.[0]?.definition ||
         "No definition available";
 
-      return { lemma, meaning };
+      return { meaning };
     },
     staleTime: 1000 * 60 * 60 * 24, // 1 day
   });
@@ -41,13 +28,12 @@ const useLemmaAndMeaning = (word: string) => {
 
 const WordWithInfo = ({ word, sentence }: Props) => {
   const { data, isLoading, error } = useLemmaAndMeaning(word);
-
+  // console.log("data", data);
   async function addWordToLearning(
     word: string,
     sentence: string,
     meaning: string
   ) {
-    console.log(word, sentence, meaning); // Check if word is set correctly here
     await database.write(async () => {
       const wordCard = await database.collections
         .get("word_cards")
@@ -61,7 +47,6 @@ const WordWithInfo = ({ word, sentence }: Props) => {
           card.efactor = 2.5;
           card.nextReview = Date.now();
         });
-      console.log("wordCard", wordCard); // Check if word is set correctly here
     });
   }
 
@@ -72,7 +57,7 @@ const WordWithInfo = ({ word, sentence }: Props) => {
       {data && (
         <>
           <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-xl font-bold flex-1">{data.lemma}</Text>
+            <Text className="text-xl font-bold flex-1">{word}</Text>
             <TouchableOpacity
               onPress={() => {
                 // Handle the action here
@@ -87,7 +72,7 @@ const WordWithInfo = ({ word, sentence }: Props) => {
           <View className="flex-row justify-between mt-2 gap-2">
             <TouchableOpacity
               onPress={async () => {
-                await addWordToLearning(data.lemma, sentence, data.meaning);
+                await addWordToLearning(word, sentence, data.meaning);
               }}
               className="bg-green-500 rounded-full p-4 flex-1"
             >

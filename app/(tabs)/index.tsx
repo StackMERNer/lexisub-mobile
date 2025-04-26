@@ -1,4 +1,4 @@
-import { Button, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 
 import { loadStopwords } from "@/utils/loadStopwords";
 import * as DocumentPicker from "expo-document-picker";
@@ -23,7 +23,10 @@ export default function HomeScreen() {
   const [totalWords, setTotalWords] = useState(0);
   const [wordsPerPage, setWordsPerPage] = useState(20);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
   const pickSRTFile = async () => {
+    setIsProcessing(true);
+    setWordsWithSentence([]);
     setTotalWords(0);
     const result = await DocumentPicker.getDocumentAsync({
       type: "*/*",
@@ -39,8 +42,11 @@ export default function HomeScreen() {
       const wordsWithContext = await extractWordsWithContext(dialogues);
       setTotalWords(wordsWithContext.length);
       setWordsWithSentence(wordsWithContext);
-      console.log("wordsWithContext", wordsWithContext.length);
+    } else {
+      // show alert
+      Alert.alert("Error", "No file selected");
     }
+    setIsProcessing(false);
   };
   const parseSRT = (srtContent: string) => {
     const lines = srtContent.split("\n");
@@ -70,9 +76,7 @@ export default function HomeScreen() {
   const extractWordsWithContext = async (dialogues: string[]) => {
     const stopwords = await loadStopwords();
     const wordMap = new Map<string, string>();
-
     const isStopword = (word: string) => stopwords.includes(word);
-    console.log("stopwords", stopwords);
     dialogues.forEach((sentence) => {
       const words = sentence
         .toLowerCase()
@@ -103,12 +107,18 @@ export default function HomeScreen() {
                 Pick SRT File
               </Text>
             </TouchableOpacity>
-            <WordBatch
-              batch={wordsWithSentence.slice(
-                (currentPage - 1) * wordsPerPage,
-                currentPage * wordsPerPage
-              )}
-            />
+            {isProcessing ? (
+              <View className="flex-1 items-center justify-center">
+                <Text className="text-lg font-bold">Processing...</Text>
+              </View>
+            ) : (
+              <WordBatch
+                batch={wordsWithSentence.slice(
+                  (currentPage - 1) * wordsPerPage,
+                  currentPage * wordsPerPage
+                )}
+              />
+            )}
             <Pagination
               currentPage={currentPage}
               totalPages={Math.ceil(totalWords / wordsPerPage)}
