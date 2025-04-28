@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import WordWithInfo from "./WordWithInfo";
 import { database } from "@/database";
+import { useQueryClient } from "@tanstack/react-query";
 
 const WordBatch = ({ batch }: { batch: WordWithSentence[] }) => {
   const [filteredBatch, setFilteredBatch] = useState<WordWithSentence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient(); // ✅ Initialize query client
 
   useEffect(() => {
     const processBatch = async () => {
@@ -32,13 +34,31 @@ const WordBatch = ({ batch }: { batch: WordWithSentence[] }) => {
       const processed: WordWithSentence[] = [];
 
       for (const { word, sentence } of batch) {
-        const res = await fetch("https://lexisub-api.onrender.com/lemmatize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: word }),
-        });
-        const data = await res.json();
-        const lemma = data.lemmas?.[0] || word;
+        const cachedLemma = queryClient.getQueryData<string>(["lemma", word]);
+
+        let lemma = cachedLemma;
+        if (!lemma) {
+          try {
+            const res = await fetch(
+              "https://lexisub-api.onrender.com/lemmatize",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: word }),
+              }
+            );
+            const data = await res.json();
+            lemma = data.lemmas?.[0] || word;
+
+            // Cache it for 7 days
+            queryClient.setQueryData(["lemma", word], lemma, {
+              updatedAt: Date.now(),
+            });
+          } catch (error) {
+            console.error("Lemmatization failed:", error);
+            lemma = word; // fallback
+          }
+        }
 
         if (
           !knownWords.has(lemma.toLowerCase()) &&
@@ -53,7 +73,7 @@ const WordBatch = ({ batch }: { batch: WordWithSentence[] }) => {
     };
 
     processBatch();
-  }, [batch]);
+  }, [batch, queryClient]); // 🧠 Add queryClient to dependency array
 
   if (isLoading) {
     return (
