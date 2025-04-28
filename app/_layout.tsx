@@ -48,6 +48,19 @@ export default function RootLayout() {
             },
           }}
         />
+        <Stack.Screen
+          name="review-session"
+          options={{
+            title: "Review",
+            headerShown: true,
+            headerBackTitle: "Back",
+            headerTintColor: "#000",
+            headerTitleStyle: {
+              // fontFamily: "SpaceMono",
+              fontSize: 16,
+            },
+          }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

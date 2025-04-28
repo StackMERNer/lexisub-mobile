@@ -22,7 +22,9 @@ const useLemmaAndMeaning = (word: string) => {
 
       return { meaning };
     },
-    staleTime: 1000 * 60 * 60 * 24, // 1 day
+    staleTime: 1000 * 60 * 60 * 24 * 7, // 7 days
+    gcTime: 1000 * 60 * 60 * 24 * 9, // 9 days, slight buffer
+    enabled: !!word, // Only run the query if word is defined
   });
 };
 

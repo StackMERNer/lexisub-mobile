@@ -10,13 +10,23 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Pagination from "@/components/Pagination";
 import { DatabaseProvider } from "@nozbe/watermelondb/DatabaseProvider";
 import { database } from "@/database";
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 export interface WordWithSentence {
   word: string;
   sentence: string;
 }
 export default function HomeScreen() {
   // Create a new query client
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 7 * 24 * 60 * 60 * 1000, // 7 days
+        gcTime: 8 * 24 * 60 * 60 * 1000, // 8 days, slight buffer
+      },
+    },
+  });
+
   const [wordsWithSentence, setWordsWithSentence] = useState<
     WordWithSentence[]
   >([]);
@@ -106,6 +116,13 @@ export default function HomeScreen() {
               <Text className="text-center text-lg font-bold">
                 Pick SRT File
               </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push("/review-session")}
+              className="flex-row items-center justify-between bg-green-100 border border-green-300 p-4 rounded-2xl mb-4 mt-3"
+            >
+              <Text className="text-lg text-green-600 font-medium">Review</Text>
+              <Ionicons name="trash-bin" size={24} color="green" />
             </TouchableOpacity>
             {isProcessing ? (
               <View className="flex-1 items-center justify-center">
